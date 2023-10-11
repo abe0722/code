@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+import paramiko
+import time
+import ipaddress
+
+HOST = "172.23.132.85"
+ssh = paramiko.SSHClient()
+ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+ssh.connect(HOST, username="admin", password="fortinet")
+command = ssh.invoke_shell()
+
+def add_ip_ecternal():
+    command.send('config system external-resource \n')
+    for i in range(1, 2):
+        ni = "%03d" % i
+        command.send('edit ' + str(ni) + '_addr \n')
+        # command.send('set status enable \n')
+        command.send('set resource http://172.23.132.72/html/10M_ipv4.txt \n')
+        command.send('set protocol http \n')
+        command.send('set refresh-rate 20 \n')
+        command.send('next \n')
+        time.sleep(1)
+        print (command.recv(65535).decode('ascii'))
+        # output = command.recv(65535).decode('ascii')
+        # print (output)
+    command.send('end \n')
+    time.sleep(1)
+    print (command.recv(65535).decode('ascii'))
+    ssh.close()
+
+add_ip_ecternal()

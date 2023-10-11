@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+import paramiko
+import time
+import ipaddress
+
+HOST = "54.95.249.239"
+ssh = paramiko.SSHClient()
+ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+ssh.connect(HOST, username="admin", password="fortinet")
+command = ssh.invoke_shell()
+
+def add_server_policy():
+    command.send('config server-policy policy \n')
+    for i in range(1, 501):
+        n1 = ipaddress.ip_address('1.1.1.0')+i
+        command.send('edit ' + str(n1) + '\n')
+        command.send('set vserver ' + str(n1) + '\n')
+        #n2 = ipaddress.ip_address('2.1.1.0')+i
+        #command.send('set server-pool ' + str(n2) + '\n')
+        command.send('set server-pool 2.1.1.1 \n')
+        command.send('set service HTTP \n')
+        command.send('set https-service HTTPS \n')
+        command.send('next \n')
+        time.sleep(0.1)
+        print (command.recv(65535).decode('ascii'))
+    command.send('end \n')
+    time.sleep(1)
+    print (command.recv(65535).decode('ascii'))
+    ssh.close()
+
+add_server_policy()
