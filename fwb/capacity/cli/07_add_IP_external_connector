@@ -3,19 +3,21 @@ import paramiko
 import time
 import ipaddress
 
-HOST = "172.23.132.85"
+HOST = "172.23.144.162"
 ssh = paramiko.SSHClient()
 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 ssh.connect(HOST, username="admin", password="fortinet")
 command = ssh.invoke_shell()
 
 def add_ip_ecternal():
+    command.send('config vdom \n')
+    command.send('edit adom01 \n')
     command.send('config system external-resource \n')
-    for i in range(1, 2):
+    for i in range(201, 514):
         ni = "%03d" % i
         command.send('edit ' + str(ni) + '_addr \n')
         # command.send('set status enable \n')
-        command.send('set resource http://172.23.132.72/html/10M_ipv4.txt \n')
+        command.send('set resource http://172.23.144.172/html/html_200_ipaddr \n')
         command.send('set protocol http \n')
         command.send('set refresh-rate 20 \n')
         command.send('next \n')

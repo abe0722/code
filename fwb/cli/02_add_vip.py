@@ -3,32 +3,30 @@ import paramiko
 import time
 import ipaddress
 
-HOST = "54.95.249.239"
+FWB_IP = "172.23.144.162"
+PORT = "port2"
+VIP_LIST = [ '10.2.1.21', '10.2.1.22',]
 ssh = paramiko.SSHClient()
 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-ssh.connect(HOST, username="admin", password="fortinet")
+ssh.connect(FWB_IP, username="admin", password="fortinet")
 command = ssh.invoke_shell()
 
-def add_vserver():
-    command.send('config server-policy vserver \n')
-    for i in range(1, 501):
-        n1 = ipaddress.ip_address('1.1.1.0')+i
-        command.send('edit ' + str(n1) + '\n')
-        command.send('config vip-list \n')
-        command.send('edit 1 \n')
-        command.send('set vip ' + str(n1) + '\n')
-        command.send('end \n')
+def add_vip():
+    command.send('config system vip \n')
+    for i in VIP_LIST:
+        command.send('edit ' + str(i) + '\n')
+        command.send('set vip ' + str(i) + '/32 \n')
+        command.send('set interface ' + PORT + '\n')
         command.send('next \n')
-        time.sleep(0.1)
-        print (command.recv(65535).decode('ascii'))
-        # output = command.recv(65535).decode('ascii')
-        # print (output)
-    command.send('end \n')
-    time.sleep(1)
+    time.sleep(0.1)
     print (command.recv(65535).decode('ascii'))
+    command.send('end \n')
+    time.sleep(3)
+    output = command.recv(65535).decode('ascii')
+    print (output)
     ssh.close()
 
-add_vserver()
+add_vip()
 
 
 

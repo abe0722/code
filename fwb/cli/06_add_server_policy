@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+import paramiko
+import time
+import ipaddress
+
+FWB_IP = "172.23.144.162"
+VIP_LIST = [ '10.2.1.21', '10.2.1.22',]
+ssh = paramiko.SSHClient()
+ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+ssh.connect(FWB_IP, username="admin", password="fortinet")
+command = ssh.invoke_shell()
+
+def add_server_policy():
+    command.send('config server-policy policy \n')
+    for i in VIP_LIST:
+        command.send('edit ' + str(i) + '\n')
+        command.send('set vserver ' + str(i) + '\n')
+        command.send('set server-pool 10.2.0.172 \n')
+        command.send('set service HTTP \n')
+        command.send('set https-service HTTPS \n')
+        command.send('next \n')
+        time.sleep(0.1)
+        print (command.recv(65535).decode('ascii'))
+    command.send('end \n')
+    time.sleep(1)
+    print (command.recv(65535).decode('ascii'))
+    ssh.close()
+
+add_server_policy()
